@@ -20,7 +20,7 @@ class PSO():
         # self.img = cv2.resize(self.img, (640,640))
         fig, ax = plt.subplots(figsize=(3,3))
         ax.imshow(self.img)
-        return fig
+        return self.img
 
     def input_partikel(self,partikel=160,ratio_size=np.array([25])):
          # ambil path gambar dan jumlah partikel yang diinginkan
@@ -827,6 +827,9 @@ class PSO():
     def createPath(self, x_init_end = 100, y_init_end=200):
         print('create path start')
 
+        box = self.gbest_box
+        box = box[self.gbest_val[self.iterasi-1] != 0]
+
         shape = self.gbest_val[self.iterasi-1,self.gbest_val[self.iterasi-1] != 0].shape[0]
         self.path_point = np.zeros((shape,3), dtype='int32')
         radius = np.zeros((shape,2), dtype='int32')
@@ -852,7 +855,7 @@ class PSO():
         # radius[...,0] = (start_point[0]-path_plan[...,1])**2+(start_point[1]-path_plan[..., 2])**2
 
 
-        for j in range(1,shape-1):
+        for j in range(shape):
         #         # gunakan rumu pythagoras
             radius[...,0] = (start_point[0]-path_plan[...,1])**2+(start_point[1]-path_plan[..., 2])**2
             radius[...,0] = [sqrt(radius[i,0]) for i in range(radius.shape[0])]
@@ -871,19 +874,28 @@ class PSO():
             radius = np.delete(radius, [0], axis=0)
             radius = radius[radius[...,1].argsort()]
         print('create path done')
-        
-    def pathPlan(self):
-        # box = self.gbest_box
-        # box = box[self.gbest_val[self.iterasi-1] != 0]
-        fig, ax = plt.subplots(figsize=(3,3))
-        ax.imshow(self.img)
-        ax.plot(self.path_point[...,0], self.path_point[...,1], linestyle='dashed', color='black')
-        ax.plot(self.path_point[...,0], self.path_point[...,1], 'o', color='black')
-        # self.dimensi_gbest(ax, box[:,0], box[:,1], box[:,2], box[:,3], edgeColor='black')
 
-        # print(path_point)
-        # plt.show()
-        return fig
+        start_point = np.array([start_pointX, start_pointY], dtype='int')
+
+        final_point = np.zeros((shape+2,2))
+        final_point[0] = start_point
+        final_point[shape+1] = back_point 
+        final_point[1:shape+1] = self.path_point[:,:2]
+ 
+        return final_point, box, self.img
+        
+    # def pathPlan(self):
+    #     box = self.gbest_box
+    #     box = box[self.gbest_val[self.iterasi-1] != 0]
+    #     fig, ax = plt.subplots(figsize=(3,3))
+    #     ax.imshow(self.img)
+    #     ax.plot(self.path_point[...,0], self.path_point[...,1], linestyle='dashed', color='black')
+    #     ax.plot(self.path_point[...,0], self.path_point[...,1], 'o', color='black')
+    #     self.dimensi_gbest(ax, box[:,0], box[:,1], box[:,2], box[:,3], edgeColor='black')
+
+    #     # print(path_point)
+    #     # plt.show()
+    #     return fig
 
 
 # test_pso = PSO()

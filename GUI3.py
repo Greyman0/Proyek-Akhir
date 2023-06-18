@@ -74,6 +74,7 @@ def select_file():
     # image = Image.open(path)
     # image = image.resize((300,200))
     # image = ImageTk.PhotoImage(image)
+    ent_img.delete(0, 'end')
     ent_img.insert(0,path)
     window.after(1000, disImage)
 
@@ -129,29 +130,37 @@ def generatePath():
 
 
 def disImage():
-    graph_image = FigureCanvasTkAgg(PSO1.input_gambar(ent_img.get())
-    , frm_disp_upper)
-    graph_image.get_tk_widget().pack(side='left', fill='both', expand=True)
+    if ent_img.get():
+        img = PSO1.input_gambar(ent_img.get())
+        ax1.clear()
+        ax1.imshow(img)
+        graph_image.draw()
+    else:
+        ax1.clear()
+        graph_image.draw()
     # pass
 
-def createPath():
-    # if pathThreading.is_alive() == False:
-        # lastIter = FigureCanvasTkAgg(master=frm_disp_bottom, figure = last_iter)
-    pathPlan = PSO1.pathPlan()
-    createdPath = FigureCanvasTkAgg(master=frm_disp_upper, figure = pathPlan)
+def createPath(path_point, box, img):
+    # fig, ax = plt.subplots(figsize=(3,3))
+    ax.clear()
+    ax.imshow(img)
+    ax.plot(path_point[:,0], path_point[:,1], linestyle='dashed', color='black')
+    ax.plot(path_point[:,0], path_point[:,1], 'o', color='black')
+    PSO1.dimensi_gbest(ax, box[:,0], box[:,1], box[:,2], box[:,3], edgeColor='black')
+    # createdPath = FigureCanvasTkAgg(master=frm_disp_upper, figure = fig)
     # lastIter.get_tk_widget().pack(side='left', fill='both')
     print(PSO1.path_point)
     if PSO1.path_point.shape:    
-        createdPath.get_tk_widget().pack(side='left', fill='both')
-        ent_coordinate.insert(0,((PSO1.path_point[:,0].flatten()-(PSO1.img.shape[1]/2))/100, (PSO1.path_point[:,1].flatten()-(PSO1.img.shape[0]/2))/100))
-
+        # createdPath.get_tk_widget().pack(side='left', fill='both')
+        createdPath.draw()
+        ent_coordinate.delete(0, 'end')
+        ent_coordinate.insert(0,((path_point[:,0].flatten()-(img.shape[1]/2))/100, (path_point[:,1].flatten()-(img.shape[0]/2))/100))
 
 def dispPath():
     PSO1.input_partikel(int(ent_jumlahParticle.get()))
     PSO1.startPSO(c1=int(ent_c1.get()), c2=int(ent_c2.get()), iterasi = int(ent_jumlahiterasi.get()))
-    PSO1.createPath(100,300)
-    createPath()
-    
+    path_point, box, img = PSO1.createPath(100,300)
+    createPath(path_point, box, img)
 
 
     # print('test')
@@ -297,6 +306,16 @@ frm_disp_bottom = ttk.Frame(master=frm_display)
 
 frm_disp_upper.pack(fill='both')
 frm_disp_bottom.pack(fill='both')
+
+fig1, ax1 = plt.subplots(figsize=(3,3))
+graph_image = FigureCanvasTkAgg(fig1
+    , frm_disp_upper)
+graph_image.get_tk_widget().pack(side='left', fill='both', expand=True)
+
+fig, ax = plt.subplots(figsize=(3,3))
+createdPath = FigureCanvasTkAgg(master=frm_disp_upper, figure = fig)
+createdPath.get_tk_widget().pack(side='left', fill='both')
+
 # frame img end
 
 # frame disply koordinat
