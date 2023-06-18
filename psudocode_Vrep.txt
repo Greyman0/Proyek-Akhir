@@ -1,0 +1,41 @@
+inisiasi awal :
+	targetx[]
+	targety[]
+
+	posX
+	posY
+
+	index = 0
+
+	stepX = 0.001
+	stepY = 0.001
+	// sumStep = 0
+
+	realDistance = sqrt((posX-targetX[index])^2 +(posY-targetY[index])^2 )
+end
+
+loop:
+	if targetX > posX{
+		stepX = 0.001
+	}else if targetY > posY {
+		stepY = 0.001
+	}else if targetY < posY{
+		stepY = -0.001
+	}else if targetX < posX{
+		stepX = -0.001
+	}
+
+	if realDistance < 0.001 {
+		posX = posX + step
+		posY = posY + step
+		updatePosition
+		realDistance = sqrt((posX-targetX[index])^2 +(posY-targetY[index])^2 )
+
+		// sumStep = sumstep + .001
+	} else {
+		index = index+1
+		realDistance = sqrt((posX-targetX[index])^2 +(posY-targetY[index])^2 )
+		// sumstep = 0
+		
+	}
+end
