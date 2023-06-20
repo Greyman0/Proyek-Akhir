@@ -10,6 +10,7 @@ import threading
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PSO_OOP1
 import matplotlib.pyplot as plt
+from tkinter import messagebox
 
 PSO1 = PSO_OOP1.PSO()
 fig, ax = plt.subplots()
@@ -122,10 +123,13 @@ def connectSerial():
     # display.get_tk_widget().pack()
 
 def generatePath():
-    pathThreading = threading.Thread(target=dispPath)
-    pathThreading.daemon = True
-    pathThreading.start()
-    # window.after(20000, createPath)
+    if int(ent_c1.get()) <= 2 and int(ent_c2.get()) <= 2 and int(ent_jumlahParticle.get()) >= 80:
+        pathThreading = threading.Thread(target=dispPath)
+        pathThreading.daemon = True
+        pathThreading.start()
+        # window.after(20000, createPath)
+    else :
+        messagebox.showwarning(title='Error', message='C1 dan C2 harus kurang dari atau sama dengan 2, Jumlah partike minimal 80')
 
 
 
@@ -161,8 +165,7 @@ def dispPath():
     PSO1.startPSO(c1=int(ent_c1.get()), c2=int(ent_c2.get()), iterasi = int(ent_jumlahiterasi.get()))
     path_point, box, img = PSO1.createPath(100,300)
     createPath(path_point, box, img)
-
-
+    
     # print('test')
     # pass
 
