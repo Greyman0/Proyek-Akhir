@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
+from PIL import Image, ImageTk
 import serial.tools.list_ports
 import serial
 import sys
@@ -12,7 +13,6 @@ import matplotlib.pyplot as plt
 from tkinter import messagebox
 import simulate 
 
-
 PSO1 = PSO_OOP1.PSO()
 simVrep = simulate.simulate()
 fig, ax = plt.subplots()
@@ -21,9 +21,8 @@ global connectedSerial
 connectedSerial = 0
 global ports
 ports = ''
-global simsState, initState 
-simsState = -1
-initState = 1
+global simsState 
+simsState = 0
 
 def serial_ports():
     """ Lists serial port names
@@ -77,32 +76,64 @@ def turnOff():
 def select_file():
 
     path = filedialog.askopenfilename(title="Select an Image", filetype=(('Image Files','*.jpg .PNG .JPEG'),('All Files', '*.*')))
+    # image = Image.open(path)
+    # image = image.resize((300,200))
+    # image = ImageTk.PhotoImage(image)
     ent_img.delete(0, 'end')
     ent_img.insert(0,path)
     window.after(1000, disImage)
+
+
+    # path = filedialog.askopenfilename(title="Select an Image", filetype=(('Image Files','*.jpg .PNG .JPEG'),('All Files', '*.*')))
+    # image = Image.open(path)
+    # image = image.resize((300,200))
+    # image = ImageTk.PhotoImage(image)
+    # ent_img.insert(0,path)
+    # graph_image = FigureCanvasTkAgg(PSO1.input_gambar(path)
+    # , frm_disp_upper)
+    # graph_image.get_tk_widget().pack(side='left', fill='both', expand=True)
+    # print(path)
+    # return path
 
 def connectSerial():
     global connectedSerial
     while True:
         if connectedSerial == 1:
             lbl_serialStatusOn.config(background='green')
+            # data = serialInst.readline().decode('utf-8').rstrip('\n')
             data = serialInst.readline()
 
-            # print(f'data = {data}')
-
+            print(f'data = {data}')
+            # print(data)
+            # if len(data) >= 1:
             if data == b'o\r\n':
                 lbl_sprayStatusOn.config(background='green', text='Connected')
                 print(data)
             elif data == b'i\r\n':
                 lbl_sprayStatusOn.config(background='red', text='Off')
+                # print(data)
+            # if data == 'on':
+            #     lbl_sprayStatusOn.config(bg='green')
+            # elif data == 'off':
+            #     lbl_sprayStatusOn.config(bg='red')
         
+# def generateParticle():
+#     jumlah_particle = ent_jumlahParticle.get()
+#     print(jumlah_particle)
+#     PSO1.input_partikel(int(jumlah_particle))
+
+    # graph_particle = FigureCanvasTkAgg(PSO1.plotDimensionWindow(), master=frm_disp_upper)
+    # graph_particle.get_tk_widget().pack(side='left', fill='both')
+    # display.get_tk_widget().pack()
+
 def generatePath():
-    if int(ent_c1.get()) <= 2 and int(ent_c2.get()) <= 2 and int(ent_jumlahParticle.get()) >= 80 and int(ent_jumlahiterasi.get())> 1:
+    if int(ent_c1.get()) <= 2 and int(ent_c2.get()) <= 2 and int(ent_jumlahParticle.get()) >= 80:
         pathThreading = threading.Thread(target=dispPath)
         pathThreading.daemon = True
         pathThreading.start()
+        # window.after(20000, createPath)
     else :
-        messagebox.showwarning(title='Error', message='C1 dan C2 harus kurang dari atau sama dengan 2, Jumlah partikel minimal 80, jumlah iterasi minimal 2')
+        messagebox.showwarning(title='Error', message='C1 dan C2 harus kurang dari atau sama dengan 2, Jumlah partike minimal 80')
 
 
 def disImage():
@@ -117,14 +148,15 @@ def disImage():
     # pass
 
 def createPath(path_point, box, img):
+    # fig, ax = plt.subplots(figsize=(3,3))
     ax.clear()
     ax.imshow(img)
     ax.plot(path_point[:,0], path_point[:,1], linestyle='dashed', color='black')
     ax.plot(path_point[:,0], path_point[:,1], 'o', color='black')
     PSO1.dimensi_gbest(ax, box[:,0], box[:,1], box[:,2], box[:,3], edgeColor='black')
-
+    # createdPath = FigureCanvasTkAgg(master=frm_disp_upper, figure = fig)
+    # lastIter.get_tk_widget().pack(side='left', fill='both')
     print(PSO1.path_point)
-    print(f'shape path point : {PSO1.path_point[:,1].shape[0]}')
     if PSO1.path_point.shape:    
         # createdPath.get_tk_widget().pack(side='left', fill='both')
         createdPath.draw()
@@ -137,39 +169,27 @@ def dispPath():
     path_point, box, img = PSO1.createPath(100,300)
     createPath(path_point, box, img)
     
+    # print('test')
     # pass
 
 
 def startEndSim():
-    global simsState, initState
-    if ent_coordinate.get():
-        simsState *= -1
-        if initState < 0 :
-            initState *= -1
-
-        print(f'state 1 : {simsState}, state 2 : {initState}')
+    global simsState
+    if ent_coordinate.get() and simsState == 0:
+        simThread.start()
+        simsState = 1
+        # btn_startSim.config(text='End Simulation')
+    # else:
+    #     print('keluar loop', simsState)
+    #     btn_startSim.config(text='Start Simulation')
+    #     simsState = 0
 
 def simulation():
-    global simsState, initState
-    while True:
-        if simsState > 0:
-            # print(f'state 1 : {simsState}, state 2 : {initState}')
-            if initState > 0 and  simsState > 0:
-                x_coor =  (PSO1.path_point[:,0].flatten()-(PSO1.img.shape[1]/2))/100
-                y_coor = (PSO1.path_point[:,1].flatten()-(PSO1.img.shape[0]/2))/100
+    x_coor =  (PSO1.path_point[:,0].flatten()-(PSO1.img.shape[1]/2))/100
+    y_coor = (PSO1.path_point[:,1].flatten()-(PSO1.img.shape[0]/2))/100
+    
+    simVrep.startSim(x_coor,y_coor)
 
-                print(x_coor.shape)
-                simVrep.initiateSim(x_coor, y_coor)
-                # print(simVrep.posTargetX)
-                initState *= -1
-            if simVrep.clientID!=-1:
-                simVrep.startSim()
-                if simVrep.distance <= 0.1 and connectedSerial == 1:
-                    print('in here ?')
-                    # p = b'1'
-                    serialInst.write(b'o')
-
-                
 
 # frame indicator dan command start
 frm_indicator_cmd = ttk.Frame(master=window, relief='flat', borderwidth=2, padding=(10,10,10,10))
@@ -345,7 +365,6 @@ serialPort.start()
 
 simThread = threading.Thread(target=simulation)
 simThread.daemon = True
-simThread.start()
 
 
 # threading end

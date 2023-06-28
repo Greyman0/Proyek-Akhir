@@ -1,6 +1,9 @@
 # Inisialisasi Library
 import numpy as np
 import matplotlib.pyplot as plt
+from skimage.color import colorconv
+from skimage.io import imread, imshow
+from skimage.color import rgb2gray, rgb2hsv
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
 import cv2
@@ -240,6 +243,9 @@ class PSO():
                 self.windowX4Y4[1,k] = (1 + np.random.rand(1))*ukuran_partikelX4Y4[k]
 
     def dimensi_partikel(self,ax, nilaiX, nilaiY, ukuranX, ukuranY, edgeColor,facecolor='none'):
+        # startX = abs(nilaiX-(1/2*ukuranX)).astype(int)
+        # startY = abs(nilaiY-(1/2*ukuranY)).astype(int)
+
         # mengatur posisi dan dimensi tiap-tiap partikel dengan looping
         kotak_dimensi = [Rectangle((x, y), panjangX, panjangY)
                     for x, y, panjangX, panjangY in zip(nilaiX, nilaiY, ukuranX, ukuranY)]
@@ -249,6 +255,18 @@ class PSO():
 
         ax.add_collection(pc)
     
+    def plotDimensionWindow(self):
+        # Plot dimensi dan partikel
+        # fig, ax = plt.subplots(figsize=(3,3))
+        # ax.plot(self.x_int, self.y_int, 'o', color='black')
+        # for x, y in zip(self.x_int, self.y_int):
+        #     ax.text(x, y, (str(x), str(y)), color="black", fontsize=8)
+        # ax.imshow(self.img)
+        # self.dimensi_partikel(ax, self.startX, self.startY, self.self.windowX, self.windowY, edgeColor='black')
+
+        # plt.show()
+        # return fig
+        pass
 
     def dimensi_gbest(self,ax, x, y, ukuranX, ukuranY, edgeColor, faceColor='none'):
         startX = abs(x-(1/2*ukuranX)).astype(int)
@@ -274,14 +292,19 @@ class PSO():
 
         startX[(x-(1/2*windowX)).astype(int) <= 0] = 0
         startY[(y-(1/2*windowY)).astype(int) <= 0] = 0
+        # print(x[(x-(gambar.shape[1])).astype(int) > 0] ,y[(y-(gambar.shape[0])).astype(int) > 0])
 
         endY = abs(startY + windowY).astype(int)#titik ujung y window
         endX = abs(startX + windowX).astype(int) #titik ujung x window
 
         if x[(x-(1/2*windowX)).astype(int) <= 0].all():
+            # print(x[(x-(1/2*windowX)).astype(int) <= 0])
             x[(x-(1/2*windowX)).astype(int) <= 0] = abs(endX[(x-(1/2*windowX)).astype(int) <= 0]/2) 
-        if y[(y-(1/2*windowY)).astype(int) <= 0].all():  
+            # print(f'{x[(x-(1/2*windowX)).astype(int) <= 0]}\n')
+        if y[(y-(1/2*windowY)).astype(int) <= 0].all():
+            # print(y[(y-(1/2*windowY)).astype(int) <= 0])  
             y[(y-(1/2*windowY)).astype(int) <= 0] = abs(endY[(y-(1/2*windowY)).astype(int) <= 0]/2) 
+            # print(y[(y-(1/2*windowY)).astype(int) <= 0])
 
         position_update = np.array([x,y], dtype='int32')
         start_position_update = np.array([startX,startY], dtype='int32')
@@ -291,6 +314,17 @@ class PSO():
             H = imageHSV[:,:,0]
             S = imageHSV[:,:,1]
             V = imageHSV[:,:,2]
+
+            # fig, ax = plt.subplots(3,2,figsize=(10,10))
+            # ax[0,0].hist(H.flatten(),180, [0,180],color='r')
+            # ax[0,0].set_title(f'Hue, {int(np.mean(H.flatten()))}')
+            # ax[1,0].hist(S.flatten(),255, [0,255],color='g')
+            # ax[1,0].set_title(f'Saturation, {int(np.mean(S.flatten()))}')
+            # ax[2,0].hist(V.flatten(),255, [0,255],color='b')
+            # ax[2,0].set_title(f'Value, {int(np.mean(S.flatten()))}')
+            # ax[0,1].imshow(image)
+            # ax[1,1].imshow(image)
+            # ax[2,1].imshow(image)
             
             lower1 = np.array([0,200,200])
             upper1 = np.array([10,255,255])
@@ -311,8 +345,18 @@ class PSO():
             almostUpper = cv2.inRange(imageHSV, almostlower2, almostupper2)
 
             almostRed = np.sum(almostLower+almostUpper)
+
+            # greenLow = np.array([60,150,150])
+            # greenUp = np.array([70,255,255])
+
+            # mostGreen = np.sum(cv2.inRange(imageHSV, greenLow, greenUp))
             
             fitnes = (10*mostRed) + almostRed
+    
+            # fig, ax = plt.subplots(figsize=(3,3))
+            # ax.imshow(image)
+            # ax.set_title(fitnes)
+            # print(fitnes)
             return fitnes
         result = np.array([cvtHsv(gambar[startY[i]:endY[i], startX[i]:endX[i]]) for i in range(x.shape[0])])
         resultInt = result.astype(int)
@@ -365,6 +409,8 @@ class PSO():
         self.startPosX2Y4 = np.zeros((self.dimensi,self.regX2Y4.shape[1]), dtype='int32')
         self.startPosX3Y4 = np.zeros((self.dimensi,self.regX3Y4.shape[1]), dtype='int32')
         self.startPosX4Y4 = np.zeros((self.dimensi,self.regX4Y4.shape[1]), dtype='int32')
+
+        # print(self.regX1Y1[0], self.fitSum(x = self.regX1Y1[0], y = self.regX1Y1[1], gambar = self.img, windowX = self.windowX1Y1[1], windowY= self.windowX1Y1[0]))
 
         self.pbest_valX1Y1, self.regX1Y1, self.startPosX1Y1 = self.fitSum(x = self.regX1Y1[0], y = self.regX1Y1[1], gambar = self.img, windowX = self.windowX1Y1[1], windowY= self.windowX1Y1[0])
         self.pbestX1Y1 = self.regX1Y1 # posisi self.pbest awal
@@ -440,6 +486,49 @@ class PSO():
         self.gbest[0,15] = self.pbestX4Y4[:,index[15]]
         self.gbest_val[0,15] = self.pbest_valX4Y4.max()
 
+        # fig, ax = plt.subplots(figsize=(5,5))
+        # fig.tight_layout()
+        # ax.imshow(self.img)
+        # ax.plot(self.regX1Y1[0], self.regX1Y1[1], 'o', color='#cf127b')
+        # ax.plot(self.regX2Y1[0], self.regX2Y1[1], 'o', color='#8fdc83')
+        # ax.plot(self.regX3Y1[0], self.regX3Y1[1], 'o', color='#089159')
+        # ax.plot(self.regX4Y1[0], self.regX4Y1[1], 'o', color='#c18e2c')
+
+        # ax.plot(self.regX1Y2[0], self.regX1Y2[1], 'o', color='#c1c4cf')
+        # ax.plot(self.regX2Y2[0], self.regX2Y2[1], 'o', color='#f274ab')
+        # ax.plot(self.regX3Y2[0], self.regX3Y2[1], 'o', color='#9b89f7')
+        # ax.plot(self.regX4Y2[0], self.regX4Y2[1], 'o', color='#927409')
+
+        # ax.plot(self.regX1Y3[0], self.regX1Y3[1], 'o', color='#1f12e5')
+        # ax.plot(self.regX2Y3[0], self.regX2Y3[1], 'o', color='#f2d104')
+        # ax.plot(self.regX3Y3[0], self.regX3Y3[1], 'o', color='#61bf00')
+        # ax.plot(self.regX4Y3[0], self.regX4Y3[1], 'o', color='#02c121')
+
+        # ax.plot(self.regX1Y4[0], self.regX1Y4[1], 'o', color='#715d6e')
+        # ax.plot(self.regX2Y4[0], self.regX2Y4[1], 'o', color='#377f20')
+        # ax.plot(self.regX3Y4[0], self.regX3Y4[1], 'o', color='#6e9e42')
+        # ax.plot(self.regX4Y4[0], self.regX4Y4[1], 'o', color='#b28a68')
+                                
+        # dimensi_partikel(ax, self.startPosX1Y1[0], self.startPosX1Y1[1], self.windowX1Y1[0], self.windowX1Y1[1], edgeColor='black')
+        # dimensi_partikel(ax, self.startPosX2Y1[0], self.startPosX2Y1[1], self.windowX2Y1[0], self.windowX2Y1[1], edgeColor='blue')
+        # dimensi_partikel(ax, self.startPosX3Y1[0], self.startPosX3Y1[1], self.windowX3Y1[0], self.windowX3Y1[1], edgeColor='cyan')
+        # dimensi_partikel(ax, self.startPosX4Y1[0], self.startPosX4Y1[1], self.windowX4Y1[0], self.windowX4Y1[1], edgeColor='green')
+                                
+        # dimensi_partikel(ax, self.startPosX1Y2[0], self.startPosX1Y2[1], self.windowX1Y2[0], self.windowX1Y2[1], edgeColor='black')
+        # dimensi_partikel(ax, self.startPosX2Y2[0], self.startPosX2Y2[1], self.windowX2Y2[0], self.windowX2Y2[1], edgeColor='blue')
+        # dimensi_partikel(ax, self.startPosX3Y2[0], self.startPosX3Y2[1], self.windowX3Y2[0], self.windowX3Y2[1], edgeColor='cyan')
+        # dimensi_partikel(ax, self.startPosX4Y2[0], self.startPosX4Y2[1], self.windowX4Y2[0], self.windowX4Y2[1], edgeColor='green')
+                                
+        # dimensi_partikel(ax, self.startPosX1Y3[0], self.startPosX1Y3[1], self.windowX1Y3[0], self.windowX1Y3[1], edgeColor='black')
+        # dimensi_partikel(ax, self.startPosX2Y3[0], self.startPosX2Y3[1], self.windowX2Y3[0], self.windowX2Y3[1], edgeColor='blue')
+        # dimensi_partikel(ax, self.startPosX3Y3[0], self.startPosX3Y3[1], self.windowX3Y3[0], self.windowX3Y3[1], edgeColor='cyan')
+        # dimensi_partikel(ax, self.startPosX4Y3[0], self.startPosX4Y3[1], self.windowX4Y3[0], self.windowX4Y3[1], edgeColor='green')
+                                
+        # dimensi_partikel(ax, self.startPosX1Y4[0], self.startPosX1Y4[1], self.windowX1Y4[0], self.windowX1Y4[1], edgeColor='black')
+        # dimensi_partikel(ax, self.startPosX2Y4[0], self.startPosX2Y4[1], self.windowX2Y4[0], self.windowX2Y4[1], edgeColor='blue')
+        # dimensi_partikel(ax, self.startPosX3Y4[0], self.startPosX3Y4[1], self.windowX3Y4[0], self.windowX3Y4[1], edgeColor='cyan')
+        # dimensi_partikel(ax, self.startPosX4Y4[0], self.startPosX4Y4[1], self.windowX4Y4[0], self.windowX4Y4[1], edgeColor='green')
+
         plt.grid()
 
         for j in range(1,iterasi):
@@ -447,7 +536,7 @@ class PSO():
             r1 = np.random.rand()
             r2 = np.random.rand()
                                     
-            # atur nilai kecepatan dan posisi
+                            # atur nilai kecepatan dan posisi
             vX1Y1 = w + vX1Y1 + (c1*r1*(self.pbestX1Y1-self.regX1Y1))+(c2*r2*(self.gbest[j-1,0].reshape(-1,1)-self.regX1Y1))
             vX2Y1 = w + vX2Y1 + (c1*r1*(self.pbestX2Y1-self.regX2Y1))+(c2*r2*(self.gbest[j-1,1].reshape(-1,1)-self.regX2Y1))
             vX3Y1 = w + vX3Y1 + (c1*r1*(self.pbestX3Y1-self.regX3Y1))+(c2*r2*(self.gbest[j-1,2].reshape(-1,1)-self.regX3Y1))
@@ -625,6 +714,55 @@ class PSO():
             self.gbest[j,15] = self.pbestX4Y4[...,self.index[15]]
             self.gbest_val[j,15] = self.pbest_valX4Y4.max()
 
+            # if j%2==0:
+            #     fig, ax = plt.subplots(figsize=(5,5))
+            #     fig.tight_layout()
+            #     ax.imshow(self.img)
+            #     ax.plot(self.regX1Y1[0], self.regX1Y1[1], 'o', color='#cf127b')
+            #     ax.plot(self.regX2Y1[0], self.regX2Y1[1], 'o', color='#8fdc83')
+            #     ax.plot(self.regX3Y1[0], self.regX3Y1[1], 'o', color='#089159')
+            #     ax.plot(self.regX4Y1[0], self.regX4Y1[1], 'o', color='#c18e2c')
+
+            #     ax.plot(self.regX1Y2[0], self.regX1Y2[1], 'o', color='#c1c4cf')
+            #     ax.plot(self.regX2Y2[0], self.regX2Y2[1], 'o', color='#f274ab')
+            #     ax.plot(self.regX3Y2[0], self.regX3Y2[1], 'o', color='#9b89f7')
+            #     ax.plot(self.regX4Y2[0], self.regX4Y2[1], 'o', color='#927409')
+
+            #     ax.plot(self.regX1Y3[0], self.regX1Y3[1], 'o', color='#1f12e5')
+            #     ax.plot(self.regX2Y3[0], self.regX2Y3[1], 'o', color='#f2d104')
+            #     ax.plot(self.regX3Y3[0], self.regX3Y3[1], 'o', color='#61bf00')
+            #     ax.plot(self.regX4Y3[0], self.regX4Y3[1], 'o', color='#02c121')
+
+            #     ax.plot(self.regX1Y4[0], self.regX1Y4[1], 'o', color='#715d6e')
+            #     ax.plot(self.regX2Y4[0], self.regX2Y4[1], 'o', color='#377f20')
+            #     ax.plot(self.regX3Y4[0], self.regX3Y4[1], 'o', color='#6e9e42')
+            #     ax.plot(self.regX4Y4[0], self.regX4Y4[1], 'o', color='#b28a68')
+
+            #     ax.set_title(f't = {j}, optima {self.gbest_val[j]/100},\nC1 = {c1} C2 = {c2} \nRatio = {self.ratio_size}')
+                                
+            #     self.dimensi_partikel(ax, self.startPosX1Y1[0], self.startPosX1Y1[1], self.windowX1Y1[0], self.windowX1Y1[1], edgeColor='#cf127b')
+            #     self.dimensi_partikel(ax, self.startPosX2Y1[0], self.startPosX2Y1[1], self.windowX2Y1[0], self.windowX2Y1[1], edgeColor='#8fdc83')
+            #     self.dimensi_partikel(ax, self.startPosX3Y1[0], self.startPosX3Y1[1], self.windowX3Y1[0], self.windowX3Y1[1], edgeColor='#089159')
+            #     self.dimensi_partikel(ax, self.startPosX4Y1[0], self.startPosX4Y1[1], self.windowX4Y1[0], self.windowX4Y1[1], edgeColor='#c18e2c')
+                                
+            #     self.dimensi_partikel(ax, self.startPosX1Y2[0], self.startPosX1Y2[1], self.windowX1Y2[0], self.windowX1Y2[1], edgeColor='#c1c4cf')
+            #     self.dimensi_partikel(ax, self.startPosX2Y2[0], self.startPosX2Y2[1], self.windowX2Y2[0], self.windowX2Y2[1], edgeColor='#f274ab')
+            #     self.dimensi_partikel(ax, self.startPosX3Y2[0], self.startPosX3Y2[1], self.windowX3Y2[0], self.windowX3Y2[1], edgeColor='#9b89f7')
+            #     self.dimensi_partikel(ax, self.startPosX4Y2[0], self.startPosX4Y2[1], self.windowX4Y2[0], self.windowX4Y2[1], edgeColor='#927409')
+                                
+            #     self.dimensi_partikel(ax, self.startPosX1Y3[0], self.startPosX1Y3[1], self.windowX1Y3[0], self.windowX1Y3[1], edgeColor='#1f12e5')
+            #     self.dimensi_partikel(ax, self.startPosX2Y3[0], self.startPosX2Y3[1], self.windowX2Y3[0], self.windowX2Y3[1], edgeColor='#f2d104')
+            #     self.dimensi_partikel(ax, self.startPosX3Y3[0], self.startPosX3Y3[1], self.windowX3Y3[0], self.windowX3Y3[1], edgeColor='#61bf00')
+            #     self.dimensi_partikel(ax, self.startPosX4Y3[0], self.startPosX4Y3[1], self.windowX4Y3[0], self.windowX4Y3[1], edgeColor='#02c121')
+                                
+            #     self.dimensi_partikel(ax, self.startPosX1Y4[0], self.startPosX1Y4[1], self.windowX1Y4[0], self.windowX1Y4[1], edgeColor='#715d6e')
+            #     self.dimensi_partikel(ax, self.startPosX2Y4[0], self.startPosX2Y4[1], self.windowX2Y4[0], self.windowX2Y4[1], edgeColor='#377f20')
+            #     self.dimensi_partikel(ax, self.startPosX3Y4[0], self.startPosX3Y4[1], self.windowX3Y4[0], self.windowX3Y4[1], edgeColor='#6e9e42')
+            #     self.dimensi_partikel(ax, self.startPosX4Y4[0], self.startPosX4Y4[1], self.windowX4Y4[0], self.windowX4Y4[1], edgeColor='#b28a68')
+
+            #     plt.grid()
+
+
         self.gbest_box = np.zeros((16,4), dtype='int32')
 
         self.gbest_box[self.gbest_box < 0 ] = 0 
@@ -653,6 +791,34 @@ class PSO():
 
         plotGbest = self.gbest[iterasi-1,self.gbest_val[iterasi-1] >0 ]
         print(plotGbest.shape)
+        # fig, ax = plt.subplots(figsize=(5,5))
+        # fig.tight_layout()
+        # ax.imshow(self.img)
+        # # ax.set_title()
+        # self.dimensi_gbest(ax, self.gbest_box[:,0], self.gbest_box[:,1], self.gbest_box[:,2], self.gbest_box[:,3], edgeColor='black')
+
+        # for i in range(plotGbest.shape[0]):
+        #     print(i)
+
+        # ax.plot(self.gbest[iterasi-1,0,0], self.gbest[iterasi-1,0,1], 'o', color='#cf127b')
+        # ax.plot(self.gbest[iterasi-1,1,0], self.gbest[iterasi-1,1,1], 'o', color='#8fdc83')
+        # ax.plot(self.gbest[iterasi-1,2,0], self.gbest[iterasi-1,2,1], 'o', color='#089159')
+        # ax.plot(self.gbest[iterasi-1,3,0], self.gbest[iterasi-1,3,1], 'o', color='#c18e2c')
+
+        # ax.plot(self.gbest[iterasi-1,4,0], self.gbest[iterasi-1,4,1], 'o', color='#c1c4cf')
+        # ax.plot(self.gbest[iterasi-1,5,0], self.gbest[iterasi-1,5,1], 'o', color='#f274ab')
+        # ax.plot(self.gbest[iterasi-1,6,0], self.gbest[iterasi-1,6,1], 'o', color='#9b89f7')
+        # ax.plot(self.gbest[iterasi-1,7,0], self.gbest[iterasi-1,7,1], 'o', color='#927409')
+
+        # ax.plot(self.gbest[iterasi-1,8,0], self.gbest[iterasi-1,8,1], 'o', color='#1f12e5')
+        # ax.plot(self.gbest[iterasi-1,9,0], self.gbest[iterasi-1,9,1], 'o', color='#f2d104')
+        # ax.plot(self.gbest[iterasi-1,10,0], self.gbest[iterasi-1,10,1], 'o', color='#61bf00')
+        # ax.plot(self.gbest[iterasi-1,11,0], self.gbest[iterasi-1,11,1], 'o', color='#02c121')
+
+        # ax.plot(self.gbest[iterasi-1,12,0], self.gbest[iterasi-1,12,1], 'o', color='#715d6e')
+        # ax.plot(self.gbest[iterasi-1,13,0], self.gbest[iterasi-1,13,1], 'o', color='#377f20')
+        # ax.plot(self.gbest[iterasi-1,14,0], self.gbest[iterasi-1,14,1], 'o', color='#6e9e42')
+        # ax.plot(self.gbest[iterasi-1,15,0], self.gbest[iterasi-1,15,1], 'o', color='#b28a68')
 
         plt.grid()
 
@@ -686,11 +852,18 @@ class PSO():
         self.path_point[shape-1,0] = back_point[0]
         self.path_point[shape-1,1] = back_point[1]
 
+        # radius[...,0] = (start_point[0]-path_plan[...,1])**2+(start_point[1]-path_plan[..., 2])**2
+
+
         for j in range(shape):
         #         # gunakan rumu pythagoras
             radius[...,0] = (start_point[0]-path_plan[...,1])**2+(start_point[1]-path_plan[..., 2])**2
             radius[...,0] = [sqrt(radius[i,0]) for i in range(radius.shape[0])]
         #         # urutkan berdasarkan jarak terdekat
+                # radius = radius[radius[...,0].argsort()]
+                # print(radius[0,1])
+                # print(path_plan)
+                # print(np.where(path_plan[...,3] == radius[0,1])[0][0])
 
             self.path_point[j,0] = path_plan[np.where(path_plan[:,3] == radius[0,1])[0][0],1]
             self.path_point[j,1] = path_plan[np.where(path_plan[:,3] == radius[0,1])[0][0],2]
@@ -711,3 +884,24 @@ class PSO():
  
         return final_point, box, self.img
         
+    # def pathPlan(self):
+    #     box = self.gbest_box
+    #     box = box[self.gbest_val[self.iterasi-1] != 0]
+    #     fig, ax = plt.subplots(figsize=(3,3))
+    #     ax.imshow(self.img)
+    #     ax.plot(self.path_point[...,0], self.path_point[...,1], linestyle='dashed', color='black')
+    #     ax.plot(self.path_point[...,0], self.path_point[...,1], 'o', color='black')
+    #     self.dimensi_gbest(ax, box[:,0], box[:,1], box[:,2], box[:,3], edgeColor='black')
+
+    #     # print(path_point)
+    #     # plt.show()
+    #     return fig
+
+
+# test_pso = PSO()
+# test_pso.input_gambar('dataset/dataset3.png')
+# test_pso.input_partikel(160)
+# # test_pso.plotDimensionWindow()
+# test_pso.startPSO(iterasi=21)
+# test_pso.createPath(100,300)
+# test_pso.pathPlan()
