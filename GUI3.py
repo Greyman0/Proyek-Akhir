@@ -110,6 +110,8 @@ def disImage():
         img = PSO1.input_gambar(ent_img.get())
         ax1.clear()
         ax1.imshow(img)
+        ax2.imshow(img)
+        monitoringPath.draw()
         graph_image.draw()
     else:
         ax1.clear()
@@ -119,6 +121,7 @@ def disImage():
 def createPath(path_point, box, img):
     ax.clear()
     ax.imshow(img)
+    
     ax.plot(path_point[:,0], path_point[:,1], linestyle='dashed', color='black')
     ax.plot(path_point[:,0], path_point[:,1], 'o', color='black')
     PSO1.dimensi_gbest(ax, box[:,0], box[:,1], box[:,2], box[:,3], edgeColor='black')
@@ -151,6 +154,7 @@ def startEndSim():
 
 def simulation():
     global simsState, initState
+    samplingStep = 0
     while True:
         if simsState > 0:
             # print(f'state 1 : {simsState}, state 2 : {initState}')
@@ -164,12 +168,32 @@ def simulation():
                 initState *= -1
             if simVrep.clientID!=-1:
                 simVrep.startSim()
-                if simVrep.distance <= 0.1 and connectedSerial == 1:
+                samplingStep+=1
+                if samplingStep == 50 and simVrep.index < PSO1.path_point[:,0].flatten().shape[0]-1:
+                    # print('hallo')
+                # if simVrep.distance%0.5 == 0:
+                    x = (simVrep.x_int*100) + (PSO1.img.shape[1]/2)
+                    y = (simVrep.y_int*100) + (PSO1.img.shape[0]/2)
+                    print(f'x = {x}, y = {y}, distance = {simVrep.distance}')
+                    img = PSO1.img
+                    plotMovement(x,y,img)
+                    samplingStep = 0
+                if simVrep.distance <= 0.1  and simVrep.index < PSO1.path_point[:,0].flatten().shape[0]-1 :
                     print('in here ?')
+                    lbl_sprayStatusOn.config(background='green', text='Connected')
                     # p = b'1'
-                    serialInst.write(b'o')
+                    # serialInst.write(b'o')
+                else:
+                    lbl_sprayStatusOn.config(background='red', text='Off')
 
-                
+
+def plotMovement(x,y):
+    # ax2.clear()
+    # ax2.imshow(img)
+    ax2.plot(x, y, 'o', color='black')
+    monitoringPath.draw()
+
+
 
 # frame indicator dan command start
 frm_indicator_cmd = ttk.Frame(master=window, relief='flat', borderwidth=2, padding=(10,10,10,10))
@@ -318,6 +342,10 @@ graph_image.get_tk_widget().pack(side='left', fill='both', expand=True)
 fig, ax = plt.subplots(figsize=(3,3))
 createdPath = FigureCanvasTkAgg(master=frm_disp_upper, figure = fig)
 createdPath.get_tk_widget().pack(side='left', fill='both')
+
+fig2, ax2 = plt.subplots(figsize=(3,3))
+monitoringPath = FigureCanvasTkAgg(master=frm_disp_bottom, figure = fig2)
+monitoringPath.get_tk_widget().pack(fill='both')
 
 # frame img end
 
