@@ -176,11 +176,10 @@ def simulation():
                 # if samplingStep == 50 and simVrep.index < PSO1.path_point[:,0].flatten().shape[0]-1:
                     # print('hallo')
                 # if simVrep.distance%0.5 == 0:
-                x = (simVrep.x_int*100) + (PSO1.img.shape[1]/2)
-                y = (simVrep.y_int*100) + (PSO1.img.shape[0]/2)
+                x_path = (simVrep.x_int*100) + (PSO1.img.shape[1]/2)
+                y_path = (simVrep.y_int*100) + (PSO1.img.shape[0]/2)
                     # print(f'x = {x}, y = {y}, distance = {simVrep.distance}')
-                x_path = x
-                y_path = y
+                
                     # samplingStep = 0
                 if simVrep.distance <= 0.1  and simVrep.index < PSO1.path_point[:,0].flatten().shape[0]-1 :
                     print('in here ?')
