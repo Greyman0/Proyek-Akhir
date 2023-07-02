@@ -172,7 +172,7 @@ def simulation():
                 initState *= -1
             if simVrep.clientID!=-1:
                 simVrep.startSim()
-                samplingStep+=1
+                # samplingStep+=1
                 # if samplingStep == 50 and simVrep.index < PSO1.path_point[:,0].flatten().shape[0]-1:
                     # print('hallo')
                 # if simVrep.distance%0.5 == 0:
