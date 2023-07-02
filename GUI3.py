@@ -67,9 +67,10 @@ def turnOn():
     global connectedSerial
     serialInst.port = drop_listCom.get()
     serialInst.open()
-    serialInst.write(b'o')
+    # serialInst.write(b'o')
     connectedSerial = 1
     print(drop_listCom.get(), connectedSerial)
+    lbl_serialStatusOn.config(bg='green', text='Connected')
 
 def turnOff():
     global connectedSerial
@@ -192,13 +193,22 @@ def simulation():
                 # print(f'y_min = {boxYMin[simVrep.index]}, y = {y_path}, y_max = { boxYmax[simVrep.index]}')
                 # print(f'x_min = {boxXMin[simVrep.index]}, x = {x_path}, x_max = { boxXmax[simVrep.index]}')
                     # samplingStep = 0
-                if simVrep.distance <= 0.08 and simVrep.index < PSO1.path_point[:,0].flatten().shape[0]-1 :
-                    print('in here ?')
-                    lbl_sprayStatusOn.config(background='green', text='Connected')
+                if simVrep.distance <= 0.25 and simVrep.index < PSO1.path_point[:,0].flatten().shape[0] :
+                    # print('in here ?')
+
                     # p = b'1'
                     # serialInst.write(b'o')
+                    if abs(simVrep.index - PSO1.path_point[:,0].flatten().shape[0]) == 1 and simVrep.distance < 0.03:
+                        serialInst.write(b'i')
+                        lbl_sprayStatusOn.config(background='red', text='Off')
+                        print('last')
+                    else:
+                        lbl_sprayStatusOn.config(background='green', text='Connected')
+                        serialInst.write(b'o')
+
                 else:
                     lbl_sprayStatusOn.config(background='red', text='Off')
+                    serialInst.write(b'i')
 
 
 def plotMovement():
