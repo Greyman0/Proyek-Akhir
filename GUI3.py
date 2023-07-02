@@ -25,6 +25,10 @@ global simsState, initState
 simsState = -1
 initState = 1
 
+global x_path, y_path
+x_path = 0
+y_path = 0 
+
 def serial_ports():
     """ Lists serial port names
 
@@ -153,8 +157,8 @@ def startEndSim():
         print(f'state 1 : {simsState}, state 2 : {initState}')
 
 def simulation():
-    global simsState, initState
-    samplingStep = 0
+    global simsState, initState, x_path, y_path
+    # samplingStep = 0
     while True:
         if simsState > 0:
             # print(f'state 1 : {simsState}, state 2 : {initState}')
@@ -169,15 +173,15 @@ def simulation():
             if simVrep.clientID!=-1:
                 simVrep.startSim()
                 samplingStep+=1
-                if samplingStep == 50 and simVrep.index < PSO1.path_point[:,0].flatten().shape[0]-1:
+                # if samplingStep == 50 and simVrep.index < PSO1.path_point[:,0].flatten().shape[0]-1:
                     # print('hallo')
                 # if simVrep.distance%0.5 == 0:
-                    x = (simVrep.x_int*100) + (PSO1.img.shape[1]/2)
-                    y = (simVrep.y_int*100) + (PSO1.img.shape[0]/2)
-                    print(f'x = {x}, y = {y}, distance = {simVrep.distance}')
-                    img = PSO1.img
-                    plotMovement(x,y,img)
-                    samplingStep = 0
+                x = (simVrep.x_int*100) + (PSO1.img.shape[1]/2)
+                y = (simVrep.y_int*100) + (PSO1.img.shape[0]/2)
+                    # print(f'x = {x}, y = {y}, distance = {simVrep.distance}')
+                x_path = x
+                y_path = y
+                    # samplingStep = 0
                 if simVrep.distance <= 0.1  and simVrep.index < PSO1.path_point[:,0].flatten().shape[0]-1 :
                     print('in here ?')
                     lbl_sprayStatusOn.config(background='green', text='Connected')
@@ -187,11 +191,16 @@ def simulation():
                     lbl_sprayStatusOn.config(background='red', text='Off')
 
 
-def plotMovement(x,y):
-    # ax2.clear()
-    # ax2.imshow(img)
-    ax2.plot(x, y, 'o', color='black')
-    monitoringPath.draw()
+def plotMovement():
+    global x_path, y_path
+    while True:
+        if x_path > 0 and y_path > 0:
+
+        # ax2.clear()
+        # ax2.imshow(img)
+            print("x dan y diupdate")
+            ax2.plot(x_path, y_path, 'o', color='black')
+            monitoringPath.draw()
 
 
 
@@ -374,6 +383,10 @@ serialPort.start()
 simThread = threading.Thread(target=simulation)
 simThread.daemon = True
 simThread.start()
+
+plotThread = threading.Thread(target=plotMovement)
+plotThread.daemon = True
+plotThread.start()
 
 
 # threading end
