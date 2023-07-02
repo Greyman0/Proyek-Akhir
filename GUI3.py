@@ -139,6 +139,7 @@ def createPath(path_point, box, img):
         ent_coordinate.insert(0,((path_point[:,0].flatten()-(img.shape[1]/2))/100, (path_point[:,1].flatten()-(img.shape[0]/2))/100))
 
 def dispPath():
+    global box
     PSO1.input_partikel(int(ent_jumlahParticle.get()))
     PSO1.startPSO(c1=int(ent_c1.get()), c2=int(ent_c2.get()), iterasi = int(ent_jumlahiterasi.get()))
     path_point, box, img = PSO1.createPath(100,300)
@@ -157,7 +158,7 @@ def startEndSim():
         print(f'state 1 : {simsState}, state 2 : {initState}')
 
 def simulation():
-    global simsState, initState, x_path, y_path
+    global simsState, initState, x_path, y_path, box
     # samplingStep = 0
     while True:
         if simsState > 0:
@@ -178,10 +179,20 @@ def simulation():
                 # if simVrep.distance%0.5 == 0:
                 x_path = (simVrep.x_int*100) + (PSO1.img.shape[1]/2)
                 y_path = (simVrep.y_int*100) + (PSO1.img.shape[0]/2)
+
+                # boxXMin = (box[:,0]-(PSO1.img.shape[1]/2))/100
+                # boxXmax = ((box[:,0] + box[:,2])-(PSO1.img.shape[1]/2))/100
+                # boxYMin = (box[:,1]-(PSO1.img.shape[0]/2))/100
+                # boxYmax = ((box[:,1] + box[:,3])-(PSO1.img.shape[0]/2))/100
+                # boxXMin = box[:,0]
+                # boxXmax = (box[:,0] + box[:,2])
+                # boxYMin = box[:,1]
+                # boxYmax = (box[:,1] + box[:,3])
                     # print(f'x = {x}, y = {y}, distance = {simVrep.distance}')
-                
+                # print(f'y_min = {boxYMin[simVrep.index]}, y = {y_path}, y_max = { boxYmax[simVrep.index]}')
+                # print(f'x_min = {boxXMin[simVrep.index]}, x = {x_path}, x_max = { boxXmax[simVrep.index]}')
                     # samplingStep = 0
-                if simVrep.distance <= 0.1  and simVrep.index < PSO1.path_point[:,0].flatten().shape[0]-1 :
+                if simVrep.distance <= 0.08 and simVrep.index < PSO1.path_point[:,0].flatten().shape[0]-1 :
                     print('in here ?')
                     lbl_sprayStatusOn.config(background='green', text='Connected')
                     # p = b'1'
@@ -197,7 +208,6 @@ def plotMovement():
 
         # ax2.clear()
         # ax2.imshow(img)
-            print("x dan y diupdate")
             ax2.plot(x_path, y_path, 'o', color='black')
             monitoringPath.draw()
 

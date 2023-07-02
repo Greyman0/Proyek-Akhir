@@ -49,7 +49,7 @@ class simulate():
 
             # while time.time()-startTime < 1000:
                     
-            if self.distance > 0.01 and self.index < self.posTargetX.shape[0]:
+            if self.distance > 0.03 and self.index < self.posTargetX.shape[0]:
                 self.x_int = self.x_int + self.t_stepX
                 self.y_int = self.y_int + (self.t_stepX*self.gradient)
                 sim.simxSetObjectPosition(self.clientID, self.drone, -1, [self.x_int, self.y_int, self.pos[2]], sim.simx_opmode_streaming)
