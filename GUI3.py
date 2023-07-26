@@ -129,6 +129,8 @@ def createPath(path_point, box, img):
     
     ax.plot(path_point[:,0], path_point[:,1], linestyle='dashed', color='black')
     ax.plot(path_point[:,0], path_point[:,1], 'o', color='black')
+    for x, y, i in zip(path_point[:,0], path_point[:,1], range(path_point.shape[0])):
+        ax.text(x, y+1, (str(i+1)), color="black", fontsize=12)
     PSO1.dimensi_gbest(ax, box[:,0], box[:,1], box[:,2], box[:,3], edgeColor='black')
 
     print(PSO1.path_point)
